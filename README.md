@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cardi! - Next.js Frontend
+
+This is the Next.js frontend for the Cardi! multiplayer card game. It is built with Next.js, Tailwind CSS, and shadcn/ui.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (v18 or later)
+- npm, yarn, or pnpm
+- A running instance of the [Cardi! backend server](https://github.com/your-repo/cardi-backend).
+
+### Installation
+
+1.  Clone the repository.
+2.  Navigate to the `cardi-client` directory.
+3.  Install the dependencies:
+
+```bash
+npm install
+```
+
+### Running the Development Server
+
+First, ensure the backend Java Spring Boot application is running (typically on `http://localhost:8080`).
+
+Then, run the frontend development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to Play
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1.  Open the application in your browser.
+2.  Enter a username in the lobby.
+3.  **Create a Room**: Click "Create New Room". You will be automatically taken to the game room.
+4.  **Join a Room**: Enter the Room Code provided by another player and click "Join Room".
+5.  Once all players have joined, the room creator can click "Start Game".
+6.  Play cards from your hand that match the suit or value of the top card on the discard pile.
+7.  If you cannot play a card, you must draw one from the deck.
+8.  Use special cards (like Ace, King, Queen, Jack, etc.) to change the game flow.
+9.  The first player to get rid of all their cards wins!
 
-## Learn More
+## Backend Connection
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The frontend connects to the backend WebSocket server at `http://localhost:8080/ws`. If your backend is running on a different address, you can change the `WS_URL` constant in `cardi-client/lib/ws-client.ts`.

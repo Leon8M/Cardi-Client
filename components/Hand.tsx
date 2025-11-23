@@ -34,10 +34,10 @@ export function Hand() {
 
   const handleCardClick = (card: Card) => {
     setSelectedCards((prev) => {
-      const isAlreadySelected = prev.find(c => c.suit === card.suit && c.value === card.value);
+      const isAlreadySelected = prev.find(c => c.id === card.id);
 
       if (isAlreadySelected) {
-        return prev.filter(c => !(c.suit === card.suit && c.value === card.value));
+        return prev.filter(c => c.id !== card.id);
       }
 
       // If nothing is selected yet, just select the card.
@@ -129,7 +129,8 @@ export function Hand() {
             <AnimatePresence>
               {hand.map((card, index) => (
               <motion.div
-                  key={`${card.suit}-${card.value}-${index}`}
+                  key={card.id}
+                  layoutId={card.id}
                   layout
                   className="absolute"
                   initial={{ opacity: 0, y: 50 }}
@@ -170,6 +171,6 @@ export function Hand() {
   );
 
   function isSelected(card: Card) {
-    return selectedCards.some(c => c.suit === card.suit && c.value === card.value);
+    return selectedCards.some(c => c.id === card.id);
   }
 }

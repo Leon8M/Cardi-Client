@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import { useGameStore } from '@/lib/store';
 import { stompManager } from '@/lib/ws-client';
 import { GameTable } from '@/components/GameTable';
-import { Hand } from '@/components/Hand';
 import { Button } from '@/components/ui/button';
 import { TurnIndicator } from '@/components/TurnIndicator';
+import { GameMessage } from '@/components/GameMessage';
 
 export default function RoomPage() {
   const params = useParams();
@@ -59,6 +59,7 @@ export default function RoomPage() {
 
   return (
     <main className="flex flex-col h-screen w-screen items-center p-2 md:p-4 overflow-hidden">
+      <GameMessage />
       <div className="w-full flex-shrink-0 text-center mb-2">
         <div className="flex justify-between items-center">
             <div className="w-24"></div> {/* Spacer */}
@@ -74,12 +75,8 @@ export default function RoomPage() {
         <TurnIndicator />
       </div>
       
-      <div className="flex-shrink relative w-full">
+      <div className="flex-1 relative w-full">
         <GameTable />
-      </div>
-
-      <div className="flex-shrink-0 h-56 md:h-64 w-full">
-        {me && gameState.started && <Hand />}
       </div>
     </main>
   );

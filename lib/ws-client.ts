@@ -1,6 +1,6 @@
 import { Client, IMessage, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { useGameStore, GameState } from './store';
+import { useGameStore, GameState, GameEvent, EventType } from './store';
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080/ws';
 
@@ -55,26 +55,72 @@ class StompManager {
 
   private onUserError = (message: IMessage) => {
     console.error('Received error from server:', message.body);
-    // Here you could update the store with the error message to show in the UI
-    // Example: useGameStore.getState().setLastError(message.body);
-    alert(`Error: ${message.body}`);
+    const event: GameEvent = JSON.parse(message.body);
+    if (event.type === EventType.ERROR) {
+      alert(`Error: ${event.payload}`);
+    }
   };
 
   private onRoomUpdate = (message: IMessage) => {
       console.log('Received room update:', message.body);
-      const gameState: GameState = JSON.parse(message.body);
-      
-      // Set the initial game state
-      useGameStore.getState().setGameState(gameState);
-
-      // Find our player ID
-      const username = useGameStore.getState().username;
-      const me = gameState.players.find(p => p.username === username);
-      if (me) {
-          useGameStore.getState().setPlayerId(me.id);
+      const event: GameEvent = JSON.parse(message.body);
+      if (event.type === EventType.ROOM_UPDATE) {
+        const gameState: GameState = event.payload;
+        useGameStore.getState().setGameState(gameState);
+        const username = useGameStore.getState().username;
+        const me = gameState.players.find(p => p.username === username);
+        if (me) {
+            useGameStore.getState().setPlayerId(me.id);
+        }
+        this.subscribeToRoom(gameState.roomCode);
       }
-      
-      this.subscribeToRoom(gameState.roomCode);
+  }
+
+  private onGameEvent = (message: IMessage) => {
+    console.log('Received game event:', message.body);
+    const event: GameEvent = JSON.parse(message.body);
+    const { 
+      setGameState,
+      handlePlayerJoined,
+      handlePlayerLeft,
+      handleCardPlayed,
+      handleCardDrawn,
+      handleTurnPassed,
+      handleCardiCalled,
+      handleGameWin
+    } = useGameStore.getState();
+
+    switch (event.type) {
+      case EventType.GAME_START:
+        setGameState(event.payload);
+        break;
+      case EventType.GAME_STATE_UPDATE:
+        setGameState(event.payload);
+        break;
+      case EventType.PLAYER_JOINED:
+        handlePlayerJoined(event.payload);
+        break;
+      case EventType.PLAYER_LEFT:
+        handlePlayerLeft(event.payload);
+        break;
+      case EventType.CARD_PLAYED:
+        handleCardPlayed(event.payload);
+        break;
+      case EventType.CARD_DRAWN:
+        handleCardDrawn(event.payload);
+        break;
+      case EventType.TURN_PASSED:
+        handleTurnPassed(event.payload);
+        break;
+      case EventType.CARDI_CALLED:
+        handleCardiCalled(event.payload);
+        break;
+      case EventType.GAME_WIN:
+        handleGameWin(event.payload);
+        break;
+      default:
+        console.warn('Unknown game event type:', event.type);
+    }
   }
 
   public connect = () => {
@@ -91,11 +137,7 @@ class StompManager {
   };
 
   public subscribeToRoom = (roomCode: string) => {
-    this.client.subscribe(`/topic/game/${roomCode}`, (message) => {
-      console.log(`Received game state for room ${roomCode}:`, message.body);
-      const gameState: GameState = JSON.parse(message.body);
-      useGameStore.getState().setGameState(gameState);
-    });
+    this.client.subscribe(`/topic/game/${roomCode}`, this.onGameEvent);
     console.log(`Subscribed to room ${roomCode}`);
   };
 

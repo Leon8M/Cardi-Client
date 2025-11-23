@@ -58,7 +58,7 @@ export function GameCard({ card, className, onClick, isSelected }: CardProps) {
       animate="visible"
       layout
       className={cn(
-        "w-20 h-28 bg-card rounded-lg p-2 flex flex-col justify-between shadow-md relative",
+        "w-16 h-24 bg-card rounded-lg p-1 flex flex-col justify-between shadow-md relative",
         "border-2 border-transparent",
         isRed ? "text-primary" : "text-foreground",
         isSelected && "ring-2 ring-offset-2 ring-offset-background ring-accent",
@@ -69,17 +69,17 @@ export function GameCard({ card, className, onClick, isSelected }: CardProps) {
     >
       <div className="flex justify-start">
         <div className="flex flex-col items-center">
-          <span className="text-xl font-bold leading-none">{card.value}</span>
-          <div className="w-4 h-4">{suitIcon}</div>
+          <span className="text-base font-bold leading-none">{card.value}</span>
+          <div className="w-2 h-2">{suitIcon}</div>
         </div>
       </div>
-      <div className="flex items-center justify-center text-4xl">
+      <div className="flex items-center justify-center text-2xl">
         {suitIcon}
       </div>
       <div className="flex justify-end">
         <div className="flex flex-col items-center rotate-180">
-          <span className="text-xl font-bold leading-none">{card.value}</span>
-          <div className="w-4 h-4">{suitIcon}</div>
+          <span className="text-base font-bold leading-none">{card.value}</span>
+          <div className="w-2 h-2">{suitIcon}</div>
         </div>
       </div>
     </Comp>

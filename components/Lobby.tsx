@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { TutorialModal } from './TutorialModal';
 
 export function Lobby() {
   const router = useRouter();
@@ -89,6 +90,10 @@ export function Lobby() {
         <Button onClick={handleJoinRoom} className="w-full" variant="secondary" disabled={connectionStatus === 'connecting'}>
           Join Room
         </Button>
+
+        <div className="mt-4 text-center">
+          <TutorialModal />
+        </div>
       </CardContent>
     </Card>
   );

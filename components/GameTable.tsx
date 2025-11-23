@@ -27,7 +27,7 @@ export function GameTable() {
       
       {/* Hand container */}
       <div className="h-56 md:h-64">
-        {me && gameState.started && <Hand />}
+        {me && gameState && gameState.started && <Hand />}
       </div>
     </div>
   );

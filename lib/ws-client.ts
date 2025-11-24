@@ -8,6 +8,7 @@ class StompManager {
   private static instance: StompManager;
   private client: Client;
   private isConnected: boolean = false;
+  private onConnectCallback: (() => void) | null = null;
 
   private constructor() {
     this.client = new Client({
@@ -35,6 +36,12 @@ class StompManager {
     this.isConnected = true;
     useGameStore.getState().setConnectionStatus('connected');
     console.log('STOMP: Connected');
+
+    // Execute the callback if it exists
+    if (this.onConnectCallback) {
+      this.onConnectCallback();
+      this.onConnectCallback = null; // Reset the callback
+    }
 
     // Subscribe to user-specific queues
     this.client.subscribe('/user/queue/errors', this.onUserError);
@@ -79,10 +86,11 @@ class StompManager {
   private onGameEvent = (message: IMessage) => {
     console.log('Received game event:', message.body);
     const event: GameEvent = JSON.parse(message.body);
-    const { 
+    const {
       setGameState,
       handlePlayerJoined,
       handlePlayerLeft,
+      handlePlayerReconnected,
       handleCardPlayed,
       handleCardDrawn,
       handleTurnPassed,
@@ -99,6 +107,9 @@ class StompManager {
         break;
       case EventType.PLAYER_JOINED:
         handlePlayerJoined(event.payload);
+        break;
+      case EventType.PLAYER_RECONNECTED:
+        handlePlayerReconnected(event.payload);
         break;
       case EventType.PLAYER_LEFT:
         handlePlayerLeft(event.payload);
@@ -123,10 +134,16 @@ class StompManager {
     }
   }
 
-  public connect = () => {
+  public connect = (onConnectCallback?: () => void) => {
     if (!this.isConnected) {
       useGameStore.getState().setConnectionStatus('connecting');
+      if (onConnectCallback) {
+        this.onConnectCallback = onConnectCallback;
+      }
       this.client.activate();
+    } else if (onConnectCallback) {
+      // If already connected, just execute the callback
+      onConnectCallback();
     }
   };
 
@@ -152,5 +169,4 @@ class StompManager {
     }
   }
 }
-
 export const stompManager = StompManager.getInstance();

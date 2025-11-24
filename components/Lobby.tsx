@@ -12,22 +12,22 @@ import { TutorialModal } from './TutorialModal';
 
 export function Lobby() {
   const router = useRouter();
-  const { username, setUsername, gameState, connectionStatus } = useGameStore();
+  const { username, setUsername, gameState, connectionStatus, setIsJoiningRoom, isJoiningRoom } = useGameStore();
   const [localRoomCode, setLocalRoomCode] = useState('');
 
   useEffect(() => {
-    if (gameState?.roomCode) {
+    if (gameState?.roomCode && isJoiningRoom) {
       router.push(`/room/${gameState.roomCode}`);
     }
-  }, [gameState, router]);
+  }, [gameState, router, isJoiningRoom]);
   
   const handleCreateRoom = () => {
     if (username.trim()) {
-      stompManager.connect();
-      // Wait for connection to be established
-      setTimeout(() => {
-          stompManager.send('/app/room.create', { username });
-      }, 500)
+      setIsJoiningRoom(true);
+      stompManager.connect(() => {
+        stompManager.send('/app/room.create', { username });
+      });
+      router.push('/room/joining');
     } else {
       alert('Please enter a username.');
     }
@@ -35,11 +35,11 @@ export function Lobby() {
 
   const handleJoinRoom = () => {
     if (username.trim() && localRoomCode.trim()) {
-      stompManager.connect();
-      // Wait for connection to be established
-      setTimeout(() => {
+      setIsJoiningRoom(true);
+      stompManager.connect(() => {
         stompManager.send('/app/room.join', { username, roomCode: localRoomCode });
-      }, 500)
+      });
+      router.push('/room/joining');
     } else {
       alert('Please enter a username and room code.');
     }

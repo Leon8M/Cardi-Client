@@ -15,27 +15,20 @@ export default function RoomPage() {
   const { gameState, connectionStatus, myPlayer, playerId, username } = useGameStore();
 
   useEffect(() => {
-    // This effect handles both initial joining and rejoining on reload
     if (roomCode && username) {
-        if (connectionStatus === 'disconnected') {
-            stompManager.connect();
+      stompManager.connect(() => {
+        // If we have a playerId, we are rejoining
+        if (playerId) {
+          stompManager.send('/app/room.rejoin', { roomCode, playerId });
+        } else if (!gameState) {
+          // If gameState is null, it means we are likely joining for the first time
+          stompManager.send('/app/room.join', { username, roomCode });
         }
-
-        const timeout = setTimeout(() => {
-            if (stompManager['isConnected']) {
-                // If gameState is null, it means we are likely reloading the page or joining for the first time
-                // without an initial private message. Let's try to join.
-                if (!gameState) {
-                    stompManager.send('/app/room.join', { username, roomCode });
-                }
-                // Always subscribe to ensure we get updates
-                stompManager.subscribeToRoom(roomCode);
-            }
-        }, 500); // 500ms delay to allow STOMP connection to establish
-
-        return () => clearTimeout(timeout);
+        // Always subscribe to ensure we get updates
+        stompManager.subscribeToRoom(roomCode);
+      });
     }
-  }, [roomCode, username, connectionStatus]); // Rerun when connection status changes
+  }, [roomCode, username, playerId]); // Rerun when connection status changes
   
   const handleStartGame = () => {
     if(roomCode) {
@@ -47,13 +40,15 @@ export default function RoomPage() {
   const isOwner = gameState?.roomOwnerId === playerId;
 
   if (!gameState) {
+    // This can happen briefly on first load, or on error.
+    // A more specific loading/error state could be handled here.
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-            <h1 className="text-2xl font-bold">Joining Room: {roomCode}</h1>
-            <p className="text-muted-foreground">Waiting for server...</p>
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+                <h1 className="text-2xl font-bold">Loading Room...</h1>
+                <p className="text-muted-foreground">Please wait.</p>
+            </div>
         </div>
-      </div>
     );
   }
 

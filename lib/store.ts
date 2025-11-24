@@ -38,6 +38,7 @@ export enum EventType {
   GAME_START = 'GAME_START',
   PLAYER_JOINED = 'PLAYER_JOINED',
   PLAYER_LEFT = 'PLAYER_LEFT',
+  PLAYER_RECONNECTED = 'PLAYER_RECONNECTED',
   CARD_PLAYED = 'CARD_PLAYED',
   CARD_DRAWN = 'CARD_DRAWN',
   TURN_PASSED = 'TURN_PASSED',
@@ -54,6 +55,10 @@ export interface GameEvent {
 }
 
 export interface PlayerJoinedPayload {
+  username: string;
+}
+
+export interface PlayerReconnectedPayload {
   username: string;
 }
 
@@ -92,13 +97,16 @@ interface GameStore {
   // Transient state
   gameState: GameState | null;
   connectionStatus: ConnectionStatus;
+  isJoiningRoom: boolean;
   
   // Actions
   setUsername: (username: string) => void;
   setPlayerId: (playerId: string) => void;
   setGameState: (gameState: GameState, message?: string) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
+  setIsJoiningRoom: (isJoining: boolean) => void;
   handlePlayerJoined: (payload: PlayerJoinedPayload) => void;
+  handlePlayerReconnected: (payload: PlayerReconnectedPayload) => void;
   handlePlayerLeft: (payload: PlayerLeftPayload) => void;
   handleCardPlayed: (payload: CardPlayedPayload) => void;
   handleCardDrawn: (payload: CardDrawnPayload) => void;
@@ -122,11 +130,13 @@ export const useGameStore = create<GameStore>()(persist((set, get) => ({
   // Transient state
   gameState: null,
   connectionStatus: 'disconnected',
+  isJoiningRoom: false,
 
   // Actions
   setUsername: (username) => set({ username }),
   setPlayerId: (playerId) => set({ playerId }),
   setConnectionStatus: (status) => set({ connectionStatus: status }),
+  setIsJoiningRoom: (isJoining) => set({ isJoiningRoom: isJoining }),
   setGameState: (gameState, message) => {
     const oldGameState = get().gameState;
     if (message) {
@@ -140,7 +150,7 @@ export const useGameStore = create<GameStore>()(persist((set, get) => ({
         newMe.hand = oldMe.hand;
       }
     }
-    set({ gameState });
+    set({ gameState, isJoiningRoom: false });
   },
 
   handlePlayerJoined: (payload) => {
@@ -148,6 +158,14 @@ export const useGameStore = create<GameStore>()(persist((set, get) => ({
     if (!gameState) return;
     const newGameState = { ...gameState };
     newGameState.message = `${payload.username} has joined the room.`;
+    set({ gameState: newGameState });
+  },
+
+  handlePlayerReconnected: (payload) => {
+    const { gameState } = get();
+    if (!gameState) return;
+    const newGameState = { ...gameState };
+    newGameState.message = `${payload.username} has reconnected.`;
     set({ gameState: newGameState });
   },
 

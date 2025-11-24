@@ -97,14 +97,12 @@ interface GameStore {
   // Transient state
   gameState: GameState | null;
   connectionStatus: ConnectionStatus;
-  isJoiningRoom: boolean;
   
   // Actions
   setUsername: (username: string) => void;
   setPlayerId: (playerId: string) => void;
   setGameState: (gameState: GameState, message?: string) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
-  setIsJoiningRoom: (isJoining: boolean) => void;
   handlePlayerJoined: (payload: PlayerJoinedPayload) => void;
   handlePlayerReconnected: (payload: PlayerReconnectedPayload) => void;
   handlePlayerLeft: (payload: PlayerLeftPayload) => void;
@@ -130,13 +128,11 @@ export const useGameStore = create<GameStore>()(persist((set, get) => ({
   // Transient state
   gameState: null,
   connectionStatus: 'disconnected',
-  isJoiningRoom: false,
 
   // Actions
   setUsername: (username) => set({ username }),
   setPlayerId: (playerId) => set({ playerId }),
   setConnectionStatus: (status) => set({ connectionStatus: status }),
-  setIsJoiningRoom: (isJoining) => set({ isJoiningRoom: isJoining }),
   setGameState: (gameState, message) => {
     const oldGameState = get().gameState;
     if (message) {
@@ -150,7 +146,7 @@ export const useGameStore = create<GameStore>()(persist((set, get) => ({
         newMe.hand = oldMe.hand;
       }
     }
-    set({ gameState, isJoiningRoom: false });
+        set({ gameState });
   },
 
   handlePlayerJoined: (payload) => {

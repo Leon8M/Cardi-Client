@@ -12,22 +12,20 @@ import { TutorialModal } from './TutorialModal';
 
 export function Lobby() {
   const router = useRouter();
-  const { username, setUsername, gameState, connectionStatus, setIsJoiningRoom, isJoiningRoom } = useGameStore();
+  const { username, setUsername, gameState, connectionStatus } = useGameStore();
   const [localRoomCode, setLocalRoomCode] = useState('');
 
   useEffect(() => {
-    if (gameState?.roomCode && isJoiningRoom) {
+    if (gameState?.roomCode) {
       router.push(`/room/${gameState.roomCode}`);
     }
-  }, [gameState, router, isJoiningRoom]);
+  }, [gameState, router]);
   
   const handleCreateRoom = () => {
     if (username.trim()) {
-      setIsJoiningRoom(true);
       stompManager.connect(() => {
         stompManager.send('/app/room.create', { username });
       });
-      router.push('/room/joining');
     } else {
       alert('Please enter a username.');
     }
@@ -35,11 +33,9 @@ export function Lobby() {
 
   const handleJoinRoom = () => {
     if (username.trim() && localRoomCode.trim()) {
-      setIsJoiningRoom(true);
       stompManager.connect(() => {
         stompManager.send('/app/room.join', { username, roomCode: localRoomCode });
       });
-      router.push('/room/joining');
     } else {
       alert('Please enter a username and room code.');
     }
